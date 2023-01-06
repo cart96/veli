@@ -23,6 +23,7 @@ defmodule Veli do
   - `match`: For matching a value.
       - for `string`, it uses regex to match.
       - for any other type, it will just compare both values.
+  - `run`: Allows you to add custom filtering function inside it that returns a boolean. If it returns false, validation will fail.
 
   Here is an example for rule defination.
 
@@ -70,7 +71,9 @@ defmodule Veli do
 
   Returns an atom.
 
-  ## Example
+  ## Examples
+
+  Simple usage
 
       iex(1)> rule = %{type: :integer, max: 100}
       %{max: 100, type: :integer}
@@ -78,6 +81,15 @@ defmodule Veli do
       :ok
       iex(3)> Veli.validate(101, rule)
       :max_error
+
+  Adding custom filtering functions
+
+      iex(1)> rule = %{type: :string, run: fn value -> String.reverse(value) === value end}
+      %{run: #Function<42.3316490/1 in :erl_eval.expr/6>, type: :string}
+      iex(2)> Veli.validate("wow", rule)
+      :ok
+      iex(3)> Veli.validate("hello", rule)
+      :run_error
 
   """
   @spec validate(any, map) :: :match_error | :max_error | :min_error | :ok | :type_error
@@ -214,6 +226,14 @@ defmodule Veli do
 
     if result === false and rule[:match] !== nil do
       :match_error
+    else
+      check_value({:run, value}, rule)
+    end
+  end
+
+  defp check_value({:run, value}, rule) do
+    if rule[:run] !== nil and rule[:run].(value) === false do
+      :run_error
     else
       :ok
     end

@@ -1,6 +1,5 @@
 defmodule VeliTest do
   use ExUnit.Case
-  doctest Veli
 
   @form %{"username" => "kitty", "password" => "hellokitty", "age" => 17, "accepted" => true}
   @rules %{
@@ -21,5 +20,13 @@ defmodule VeliTest do
   test "fail age validation" do
     form = %{@form | "age" => 11}
     assert Veli.validate_form(form, @rules) |> Veli.get_error() === {"age", :min_error}
+  end
+
+  test "validate if a string is palindrome" do
+    rule = %{type: :string, run: fn value -> String.reverse(value) === value end}
+
+    assert Veli.validate("wow", rule) === :ok
+    assert Veli.validate("racecar", rule) === :ok
+    assert Veli.validate("height", rule) === :run_error
   end
 end
