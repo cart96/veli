@@ -6,14 +6,19 @@ defmodule Veli do
   @spec validate_form(map, map) :: list
   def validate_form(form, rules) do
     form
-    |> Enum.map(fn {key, value} ->
-      {key, check_value({:type, value}, rules[key])}
-    end)
+    |> Enum.map(fn {key, value} -> {key, check_value({:type, value}, rules[key])} end)
   end
 
   @spec validate(any, map) :: :match_error | :max_error | :min_error | :ok | :type_error
   def validate(value, rule) do
     check_value({:type, value}, rule)
+  end
+
+  @spec get_error(list) :: tuple | nil
+  def get_error(result) do
+    result
+    |> Enum.filter(fn {_, status} -> status !== :ok end)
+    |> List.first()
   end
 
   defp check_value({:type, value}, rule) do
