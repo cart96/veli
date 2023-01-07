@@ -1,25 +1,43 @@
 defmodule Veli.MixProject do
   use Mix.Project
 
-  def project do
+  @version "0.1.0"
+  @source_url "https://github.com/cart96/veli"
+
+  def project() do
     [
       app: :veli,
-      version: "0.1.0",
-      elixir: "~> 1.14",
-      start_permanent: Mix.env() == :prod,
-      deps: deps()
+      version: @version,
+      elixir: "~> 1.7",
+      consolidate_protocols: Mix.env() != :test,
+      description: description(),
+      package: package(),
+      deps: deps(),
+      name: "Veli",
+      source_url: @source_url
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
-  def application do
+  def application() do
+    []
+  end
+
+  defp deps() do
     [
-      extra_applications: [:logger]
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
-  defp deps do
-    [{:ex_doc, "~> 0.21", only: :dev, runtime: false}]
+  defp description() do
+    "Data validation library for Elixir."
+  end
+
+  defp package() do
+    [
+      name: "veli",
+      licenses: ["MIT License"],
+      links: %{"GitHub" => @source_url},
+      maintainers: ["icecat696 (cart96)"]
+    ]
   end
 end
