@@ -4,10 +4,10 @@ defmodule Veli do
 
   ## Rule
 
-  Rule is an elixir map that contains some rules for validation.
+  Rule is a keyword list that contains some rules for validation.
 
-  A rule map can have these options:
-  - `type`: for validating types and this also affects some other rules like `min` and `max`. Supports following types:
+  A rule has these options:
+  - `type`: for validating types / affects some other rules like `min` and `max`. Supports following types:
       - `string`
       - `integer`
       - `number`
@@ -27,13 +27,13 @@ defmodule Veli do
 
   Here is an example for rule defination.
 
-      username_rule = %{type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/}
+      username_rule = [type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/]
 
   And for validating forms:
 
       form_rules = %{
-        "username" => %{type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/},
-        "age" => %{type: :integer, min: 13}
+        "username" => [type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/],
+        "age" => [type: :integer, min: 13]
       }
 
   """
@@ -41,16 +41,16 @@ defmodule Veli do
   @doc """
   Validate a form with rules.
 
-  Returns list of results which contains a tuple that includes result with key.
+  Returns list of results which contains a tuple that includes key with result.
 
   ## Example
 
       iex(1)> form = %{"username" => "john", "age" => 17}
       %{"age" => 17, "username" => "john"}
-      iex(2)> rules = %{"username" => %{type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/}, "age" => %{type: :integer, min: 13}}
+      iex(2)> rules = %{"username" => [type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/], "age" => [type: :integer, min: 13]}
       %{
-        "age" => %{min: 13, type: :integer},
-        "username" => %{match: ~r/^[a-zA-Z0-9_]*$/, max: 32, min: 3, type: :string}
+        "age" => [type: :integer, min: 13],
+        "username" => [type: :string, min: 3, max: 32, match: ~r/^[a-zA-Z0-9_]*$/]
       }
       iex(3)> Veli.validate_form(form, rules)
       [{"age", :ok}, {"username", :ok}]
@@ -67,6 +67,28 @@ defmodule Veli do
   end
 
   @doc """
+  Validate list elements with a rule
+
+  Returns list of results which contains a tuple that includes index with result.
+
+  ## Example
+
+      iex(1)> rule = [type: :integer, run: fn value -> rem(value, 2) == 0 end]
+      [type: :integer, max: 100]
+      iex(2)> Veli.validate_list([4, 6, 8, 10], rule) |> Veli.get_error()
+      nil
+      iex(3)> Veli.validate([4, 3, 8], rule) |> Veli.get_error()
+      {1, :run_error}
+
+  """
+  @spec validate_list(list, keyword) :: list
+  def validate_list(list, rule) do
+    list
+    |> Enum.with_index()
+    |> Enum.map(fn {value, index} -> {index, check_value({:type, value}, rule)} end)
+  end
+
+  @doc """
   Validate a value with rule.
 
   Returns an atom.
@@ -75,8 +97,8 @@ defmodule Veli do
 
   Simple usage
 
-      iex(1)> rule = %{type: :integer, max: 100}
-      %{max: 100, type: :integer}
+      iex(1)> rule = [type: :integer, max: 100]
+      [type: :integer, max: 100]
       iex(2)> Veli.validate(96, rule)
       :ok
       iex(3)> Veli.validate(101, rule)
@@ -84,15 +106,15 @@ defmodule Veli do
 
   Adding custom filtering functions
 
-      iex(1)> rule = %{type: :string, run: fn value -> String.reverse(value) === value end}
-      %{run: #Function<42.3316490/1 in :erl_eval.expr/6>, type: :string}
+      iex(1)> rule = [type: :string, run: fn value -> String.reverse(value) === value end]
+      [type: :string, run: #Function<42.3316493/1 in :erl_eval.expr/6>]
       iex(2)> Veli.validate("wow", rule)
       :ok
       iex(3)> Veli.validate("hello", rule)
       :run_error
 
   """
-  @spec validate(any, map) :: :match_error | :max_error | :min_error | :ok | :type_error
+  @spec validate(any, keyword) :: :match_error | :max_error | :min_error | :ok | :type_error
   def validate(value, rule) do
     check_value({:type, value}, rule)
   end
@@ -106,14 +128,18 @@ defmodule Veli do
 
       iex(1)> form = %{"username" => "james", "age" => 10}
       %{"age" => 10, "username" => "james"}
-      iex(2)> rules = %{"username" => %{type: :string}, "age" => %{type: :integer, min: 13}}  %{"age" => %{min: 13, type: :integer}, "username" => %{type: :string}}
+      iex(2)> rules = %{"username" => [type: :string], "age" => [type: :integer, min: 13]}
+      %{
+        "age" => [type: :integer, min: 13],
+        "username" => [type: :string]
+      }
       iex(3)> Veli.validate_form(form, rules)
       [{"age", :min_error}, {"username", :ok}]
-      iex(4)> Veli.validate_form(form, rules) |> Veli.get_error
+      iex(4)> Veli.validate_form(form, rules) |> Veli.get_error()
       {"age", :min_error}
       iex(5)> form = %{form | "age" => 20}
       %{"age" => 20, "username" => "james"}
-      iex(6)> Veli.validate_form(form, rules) |> Veli.get_error
+      iex(6)> Veli.validate_form(form, rules) |> Veli.get_error()
       nil
 
   """
