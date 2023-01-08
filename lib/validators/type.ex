@@ -1,5 +1,5 @@
 defmodule Veli.Validators.Type do
-  @spec valid?(boolean | binary | maybe_improper_list | number | map, any) :: boolean
+  @spec valid?(boolean | binary | maybe_improper_list | number | map, atom) :: boolean
   def valid?(value, rule) when is_binary(value) do
     rule === :string
   end
