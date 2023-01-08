@@ -8,14 +8,6 @@ defmodule Veli.Validators.Min do
     value >= rule
   end
 
-  def valid?(value, rule) when is_list(value) do
-    :erlang.length(value) >= rule
-  end
-
-  def valid?(value, rule) when is_map(value) do
-    :erlang.length(Map.keys(value)) >= rule
-  end
-
   def valid?(_value, _rule) do
     true
   end

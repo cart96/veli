@@ -16,14 +16,6 @@ defmodule Veli.Validators.Type do
     rule === :boolean
   end
 
-  def valid?(value, rule) when is_list(value) do
-    rule === :list
-  end
-
-  def valid?(value, rule) when is_map(value) do
-    rule === :map
-  end
-
   def valid?(_value, _rule) do
     true
   end
