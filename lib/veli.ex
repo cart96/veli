@@ -25,7 +25,7 @@ defmodule Veli do
     module
     |> module_to_path
     |> Enum.fetch!(3)
-    |> String.downcase()
-    |> String.to_existing_atom()
+    |> String.downcase(:ascii)
+    |> String.to_atom()
   end
 end
