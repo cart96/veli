@@ -20,10 +20,10 @@ defmodule Veli do
 
       cond do
         is_struct(rules, Veli.Types.List) and not is_list(value) ->
-          {key, type: false}
+          {key, type: rules[:error] || false}
 
         is_struct(rules, Veli.Types.Map) and not (is_map(value) or is_struct(value)) ->
-          {key, type: false}
+          {key, type: rules[:error] || false}
 
         true ->
           {key, valid(value, rules)}
@@ -43,10 +43,19 @@ defmodule Veli do
     |> Enum.map(fn module ->
       rule_atom = validator_to_atom(module)
       rule = rules[rule_atom]
-      {rule_atom, module.valid?(value, rule)}
+
+      case module.valid?(value, rule) do
+        true ->
+          {rule_atom, true}
+
+        false ->
+          fail_msg = rules[String.to_atom("_" <> Atom.to_string(rule_atom))]
+          {rule_atom, fail_msg || false}
+      end
     end)
   end
 
+  @spec errors(keyword) :: keyword
   def errors(result) do
     result
     |> Enum.map(fn {atom, value} -> if is_list(value), do: errors(value), else: {atom, value} end)
@@ -54,6 +63,7 @@ defmodule Veli do
     |> Enum.filter(fn {_atom, value} -> value !== true end)
   end
 
+  @spec error(keyword) :: tuple
   def error(result) do
     result
     |> errors
