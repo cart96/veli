@@ -1,4 +1,14 @@
 defmodule Veli.Validators.Max do
+  @moduledoc """
+  Max validator.
+
+  ## Example
+
+      rule = [max: 20]
+      Veli.valid("valid length", rule)
+      Veli.valid(30, rule) # invalid
+  """
+
   @spec valid?(binary | maybe_improper_list | number | map, number) :: boolean
   def valid?(value, rule) when is_binary(value) do
     String.length(value) <= rule

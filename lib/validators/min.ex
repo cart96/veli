@@ -1,4 +1,14 @@
 defmodule Veli.Validators.Min do
+  @moduledoc """
+  Min validator.
+
+  ## Example
+
+      rule = [min: 5]
+      Veli.valid("valid length", rule)
+      Veli.valid(1, rule) # invalid
+  """
+
   @spec valid?(binary | maybe_improper_list | number | map, number) :: boolean
   def valid?(value, rule) when is_binary(value) do
     String.length(value) >= rule

@@ -1,4 +1,18 @@
 defmodule Veli.Validators.Type do
+  @moduledoc """
+  Type validator.
+  - `:string`
+  - `:integer`
+  - `:float`
+  - `:boolean`
+
+  ## Example
+
+      rule = [type: :integer]
+      Veli.valid(2, rule) # valid
+      Veli.valid(4.2, rule) # not valid
+  """
+
   @spec valid?(boolean | binary | maybe_improper_list | number | map, atom) :: boolean
   def valid?(value, rule) when is_binary(value) do
     rule === :string

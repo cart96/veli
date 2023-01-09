@@ -18,6 +18,41 @@ end
 
 Documentation is avaible at [HexDocs](https://hexdocs.pm/veli).
 
+## Example
+
+The following example taken from veli tests.
+
+```ex
+form_validator = %Veli.Types.Map{
+  rule: %{
+    username: [
+      # Validation
+      type: :string,
+      min: 3,
+      max: 32,
+      match: ~r/^[a-zA-Z0-9_]*$/,
+      # Errors
+      _type: "Username must be a string.",
+      _min: "Username is too short.",
+      _max: "Username is too long.",
+      _match: "Username must only contains alphanumeric characters."
+    ],
+    age: [
+      # Validation
+      type: :integer,
+      min: 13,
+      # Errors
+      _type: "Age must be an integer.",
+      _min: "Age must be at least 13."
+    ]
+  },
+  error: "Form must be an object."
+}
+
+form = %{user: "john", age: 16}
+Veli.valid(form, form_validator)
+```
+
 ## Contributing
 
 Please don't send any pull request to master branch.
