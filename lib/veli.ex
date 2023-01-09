@@ -1,37 +1,36 @@
 defmodule Veli do
   @spec valid(any, keyword) :: keyword
-  def valid(values, rules) when is_list(values) do
+  def valid(values, rules) when is_struct(rules, Veli.Types.List) do
     %{rule: rules} = rules
 
-    values
-    |> Enum.with_index()
-    |> Enum.map(fn {value, index} -> {index, valid(value, rules)} end)
+    if is_list(values) do
+      values
+      |> Enum.with_index()
+      |> Enum.map(fn {value, index} -> {index, valid(value, rules)} end)
+    else
+      [type: rules[:error] || false]
+    end
   end
 
-  def valid(values, rules_map) when is_struct(values) or is_map(values) do
+  def valid(values, rules_map) when is_struct(rules_map, Veli.Types.Map) do
     %{rule: rules_map} = rules_map
 
-    values
-    |> Map.keys()
-    |> Enum.filter(fn key -> rules_map[key] !== nil end)
-    |> Enum.map(fn key ->
-      value = values[key]
-      rules = rules_map[key]
+    if is_map(values) or is_struct(values) do
+      values
+      |> Map.keys()
+      |> Enum.filter(fn key -> rules_map[key] !== nil end)
+      |> Enum.map(fn key ->
+        value = values[key]
+        rules = rules_map[key]
 
-      cond do
-        is_struct(rules, Veli.Types.List) and not is_list(value) ->
-          {key, type: rules[:error] || false}
-
-        is_struct(rules, Veli.Types.Map) and not (is_map(value) or is_struct(value)) ->
-          {key, type: rules[:error] || false}
-
-        true ->
-          {key, valid(value, rules)}
-      end
-    end)
+        {key, valid(value, rules)}
+      end)
+    else
+      [type: rules_map[:error] || false]
+    end
   end
 
-  def valid(value, rules) do
+  def valid(value, rules) when is_list(rules) do
     {:ok, modules} = :application.get_key(:veli, :modules)
 
     modules
@@ -53,6 +52,10 @@ defmodule Veli do
           {rule_atom, fail_msg || false}
       end
     end)
+  end
+
+  def valid(_value, _rules) do
+    raise ArgumentError, message: "Unexpected type for rules."
   end
 
   @spec errors(keyword) :: keyword
