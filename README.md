@@ -9,7 +9,7 @@ the package can be installed by adding `veli` to your list of dependencies in `m
 ```elixir
 def deps do
   [
-    {:veli, "~> 0.1.0"}
+    {:veli, "~> 0.2.0"}
   ]
 end
 ```

@@ -1,14 +1,14 @@
 defmodule Veli.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
   @source_url "https://github.com/cart96/veli"
 
   def project() do
     [
       app: :veli,
       version: @version,
-      elixir: "~> 1.7",
+      elixir: "~> 1.8",
       consolidate_protocols: Mix.env() != :test,
       description: description(),
       package: package(),
