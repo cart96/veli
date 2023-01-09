@@ -25,7 +25,7 @@ The following example taken from veli tests.
 ```ex
 form_validator = %Veli.Types.Map{
   rule: %{
-    username: [
+    "username" => [
       # Validation
       type: :string,
       min: 3,
@@ -37,7 +37,7 @@ form_validator = %Veli.Types.Map{
       _max: "Username is too long.",
       _match: "Username must only contains alphanumeric characters."
     ],
-    age: [
+    "age" => [
       # Validation
       type: :integer,
       min: 13,
@@ -49,7 +49,7 @@ form_validator = %Veli.Types.Map{
   error: "Form must be an object."
 }
 
-form = %{user: "john", age: 16}
+form = %{"username" => "john", "age" => 16}
 Veli.valid(form, form_validator)
 ```
 
