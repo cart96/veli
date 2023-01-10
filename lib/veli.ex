@@ -52,6 +52,16 @@ defmodule Veli do
   You can read library tests for more example.
   """
 
+  @validators %{
+    type: Veli.Validators.Type,
+    run: Veli.Validators.Run,
+    outside: Veli.Validators.Outside,
+    inside: Veli.Validators.Inside,
+    min: Veli.Validators.Min,
+    max: Veli.Validators.Max,
+    match: Veli.Validators.Match
+  }
+
   @doc """
   Validate a value with rules.
   Returns a keyword list which contains results. You should not process that result yourself. Use `Veli.errors` or `Veli.error` for processing results instead.
@@ -77,44 +87,41 @@ defmodule Veli do
     end
   end
 
-  def valid(values, rules_map) when is_struct(rules_map, Veli.Types.Map) do
-    %{rule: rules_map} = rules_map
+  def valid(values, rules) when is_struct(rules, Veli.Types.Map) do
+    %{rule: rules} = rules
 
     if is_map(values) or is_struct(values) do
       values
       |> Map.keys()
-      |> Enum.filter(fn key -> rules_map[key] !== nil end)
+      |> Enum.filter(fn key -> rules[key] !== nil end)
       |> Enum.map(fn key ->
         value = values[key]
-        rules = rules_map[key]
+        rules = rules[key]
 
         {key, valid(value, rules)}
       end)
     else
-      [type: rules_map[:error] || false]
+      [type: rules[:error] || false]
     end
   end
 
   def valid(value, rules) when is_list(rules) do
-    {:ok, modules} = :application.get_key(:veli, :modules)
+    keys = Keyword.keys(rules)
 
-    modules
-    |> Enum.filter(fn module -> Enum.fetch(module_to_path(module), 2) === {:ok, "Validators"} end)
-    |> Enum.filter(fn module ->
-      rule_atom = validator_to_atom(module)
-      Enum.any?(rules, fn {atom, _value} -> rule_atom === atom end)
+    @validators
+    |> Map.filter(fn {atom, _module} ->
+      atom in keys
     end)
-    |> Enum.map(fn module ->
-      rule_atom = validator_to_atom(module)
-      rule = rules[rule_atom]
+    |> Keyword.new(fn {atom, module} ->
+      rule = rules[atom]
 
       case module.valid?(value, rule) do
         true ->
-          {rule_atom, true}
+          {atom, true}
 
         false ->
-          fail_msg = rules[String.to_atom("_" <> Atom.to_string(rule_atom))]
-          {rule_atom, fail_msg || false}
+          fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
+          {atom, fail_msg || false}
       end
     end)
   end
@@ -153,17 +160,5 @@ defmodule Veli do
     result
     |> errors
     |> List.first()
-  end
-
-  defp module_to_path(module) do
-    String.split(to_string(module), ".")
-  end
-
-  defp validator_to_atom(module) do
-    module
-    |> module_to_path
-    |> Enum.fetch!(3)
-    |> String.downcase(:ascii)
-    |> String.to_atom()
   end
 end
