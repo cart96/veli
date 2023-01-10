@@ -19,6 +19,6 @@ defmodule Veli.Validators.Max do
   end
 
   def valid?(_value, _rule) do
-    true
+    false
   end
 end

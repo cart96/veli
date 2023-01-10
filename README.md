@@ -27,7 +27,7 @@ form_validator = %Veli.Types.Map{
   rule: %{
     "username" => [
       # Validation
-      type: :string,
+      type: {:string, false},
       min: 3,
       max: 32,
       match: ~r/^[a-zA-Z0-9_]*$/,
@@ -39,7 +39,7 @@ form_validator = %Veli.Types.Map{
     ],
     "age" => [
       # Validation
-      type: :integer,
+      type: {:integer, false},
       min: 13,
       # Errors
       _type: "Age must be an integer.",

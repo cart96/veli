@@ -7,14 +7,14 @@ defmodule Veli do
   When you validate simple types (like a string or an integer),
   you must use simple rules. Which is a keyword list.
 
-      rule = [type: :string, run: fn value -> String.reverse(value) === value end]
+      rule = [type: {:string, false}, run: fn value -> String.reverse(value) === value end]
       Veli.valid("wow", rule) |> Veli.error() === nil
 
   ### List Rules
   When you need to validate every item on a list,
   you must use `Veli.Types.List` struct so validator can know if it is validating a string or a value.
 
-      rule = %Veli.Types.List{rule: [type: :integer]}
+      rule = %Veli.Types.List{rule: [type: {:integer, false}]}
       Veli.valid([4, 2, 7, 1], rule) |> Veli.error() === nil
 
   ### Map Rules
@@ -22,15 +22,15 @@ defmodule Veli do
   you must use `Veli.Types.Map` struct so validator can know if it is validating a map or a value.
 
       rule = %Veli.Types.Map{rule: %{
-        username: [type: :string],
-        age: [type: :string, min: 13]
+        username: [type: {:string, false}],
+        age: [type: {:integer, false}, min: 13]
       }}
       Veli.valid(%{username: "bob", age: 16}, rule) |> Veli.error() === nil
 
   ## Custom Errors
   By default, Any error returns `false`. You can specify custom errors with adding underscore (_) prefix.
 
-      rule = [type: :integer, _type: "Value must be an integer!"]
+      rule = [type: {:integer, false}, _type: "Value must be an integer!"]
       Veli.valid(10, rule) |> Veli.error() # nil
       Veli.valid("invalid value", rule) |> Veli.error() # "Value must be an integer!"
 
@@ -40,8 +40,8 @@ defmodule Veli do
 
       rule = %Veli.Types.Map{
         rule: %{
-          username: [type: :string],
-          age: [type: :string, min: 13]
+          username: [type: {:string, false}],
+          age: [type: {:string, false}, min: 13]
         },
         error: "Not a valid object."
       }
@@ -68,7 +68,7 @@ defmodule Veli do
 
   ## Example
 
-      rule = [type: :string, match: ~r/^https?/]
+      rule = [type: {:string, false}, match: ~r/^https?/]
       Veli.valid("wow", rule) |> Veli.error() !== nil
       Veli.valid("https://hex.pm", rule) |> Veli.error() === nil
 
@@ -135,7 +135,7 @@ defmodule Veli do
 
   ## Example
 
-      rule = %Veli.Types.List{rules: [type: :float]}
+      rule = %Veli.Types.List{rules: [type: {:float, true}]}
       Veli.valid([5, 3.2, "how"], rule) |> Veli.errors()
   """
   @spec errors(keyword) :: keyword
@@ -152,7 +152,7 @@ defmodule Veli do
 
   ## Example
 
-      rule = %Veli.Types.List{rules: [type: :float]}
+      rule = %Veli.Types.List{rules: [type: {:float, true}]}
       Veli.valid([5, 3.2, "how"], rule) |> Veli.error()
   """
   @spec error(keyword) :: tuple
