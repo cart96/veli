@@ -52,4 +52,12 @@ defmodule VeliTest do
     assert Veli.valid("racecar", rule) |> Veli.error() === nil
     assert Veli.valid("height", rule) |> Veli.error() !== nil
   end
+
+  test "nullable value" do
+    rule = [type: {:string, true}]
+
+    assert Veli.valid("hello", rule) |> Veli.error() === nil
+    assert Veli.valid(nil, rule) |> Veli.error() === nil
+    assert Veli.valid(5, rule) |> Veli.error() !== nil
+  end
 end

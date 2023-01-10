@@ -115,13 +115,11 @@ defmodule Veli do
     |> Keyword.new(fn {atom, module} ->
       rule = rules[atom]
 
-      case module.valid?(value, rule) do
-        true ->
-          {atom, true}
-
-        false ->
-          fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
-          {atom, fail_msg || false}
+      if module.valid?(value, rule) === true do
+        {atom, true}
+      else
+        fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
+        {atom, fail_msg || false}
       end
     end)
   end

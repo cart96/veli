@@ -19,6 +19,6 @@ defmodule Veli.Validators.Min do
   end
 
   def valid?(_value, _rule) do
-    false
+    true
   end
 end
