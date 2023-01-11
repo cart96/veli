@@ -27,22 +27,26 @@ form_validator = %Veli.Types.Map{
   rule: %{
     "username" => [
       # Validation
-      type: {:string, false},
+      type: :string,
+      nullable: false,
       min: 3,
       max: 32,
       match: ~r/^[a-zA-Z0-9_]*$/,
       # Errors
       _type: "Username must be a string.",
+      _nullable: "Username field not found",
       _min: "Username is too short.",
       _max: "Username is too long.",
       _match: "Username must only contains alphanumeric characters."
     ],
     "age" => [
       # Validation
-      type: {:integer, false},
+      type: :integer,
+      nullable: false,
       min: 13,
       # Errors
       _type: "Age must be an integer.",
+      _nullable: "Age field not found",
       _min: "Age must be at least 13."
     ]
   },

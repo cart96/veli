@@ -7,14 +7,14 @@ defmodule Veli do
   When you validate simple types (like a string or an integer),
   you must use simple rules. Which is a keyword list.
 
-      rule = [type: {:string, false}, run: fn value -> String.reverse(value) === value end]
+      rule = [type: :string, run: fn value -> String.reverse(value) === value end]
       Veli.valid("wow", rule) |> Veli.error() === nil
 
   ### List Rules
   When you need to validate every item on a list,
   you must use `Veli.Types.List` struct so validator can know if it is validating a string or a value.
 
-      rule = %Veli.Types.List{rule: [type: {:integer, false}]}
+      rule = %Veli.Types.List{rule: [type: :integer]}
       Veli.valid([4, 2, 7, 1], rule) |> Veli.error() === nil
 
   ### Map Rules
@@ -22,15 +22,15 @@ defmodule Veli do
   you must use `Veli.Types.Map` struct so validator can know if it is validating a map or a value.
 
       rule = %Veli.Types.Map{rule: %{
-        username: [type: {:string, false}],
-        age: [type: {:integer, false}, min: 13]
+        username: [type: :string],
+        age: [type: :integer, min: 13]
       }}
       Veli.valid(%{username: "bob", age: 16}, rule) |> Veli.error() === nil
 
   ## Custom Errors
   By default, Any error returns `false`. You can specify custom errors with adding underscore (_) prefix.
 
-      rule = [type: {:integer, false}, _type: "Value must be an integer!"]
+      rule = [type: :integer, _type: "Value must be an integer!"]
       Veli.valid(10, rule) |> Veli.error() # nil
       Veli.valid("invalid value", rule) |> Veli.error() # "Value must be an integer!"
 
@@ -40,8 +40,8 @@ defmodule Veli do
 
       rule = %Veli.Types.Map{
         rule: %{
-          username: [type: {:string, false}],
-          age: [type: {:string, false}, min: 13]
+          username: [type: :string],
+          age: [type: :integer, min: 13]
         },
         error: "Not a valid object."
       }
@@ -52,7 +52,8 @@ defmodule Veli do
   You can read library tests for more example.
   """
 
-  @validators %{
+  @validators [
+    nullable: Veli.Validators.Nullable,
     type: Veli.Validators.Type,
     run: Veli.Validators.Run,
     outside: Veli.Validators.Outside,
@@ -60,7 +61,7 @@ defmodule Veli do
     min: Veli.Validators.Min,
     max: Veli.Validators.Max,
     match: Veli.Validators.Match
-  }
+  ]
 
   @doc """
   Validate a value with rules.
@@ -68,13 +69,13 @@ defmodule Veli do
 
   ## Example
 
-      rule = [type: {:string, false}, match: ~r/^https?/]
+      rule = [type: :string, match: ~r/^https?/]
       Veli.valid("wow", rule) |> Veli.error() !== nil
       Veli.valid("https://hex.pm", rule) |> Veli.error() === nil
 
   More examples can be found in library tests.
   """
-  @spec valid(any, keyword | Veli.Types.List | Veli.Types.Map) :: keyword
+  @spec valid(any, keyword | Veli.Types.List | Veli.Types.Map) :: keyword | tuple
   def valid(values, rules) when is_struct(rules, Veli.Types.List) do
     %{rule: rules} = rules
 
@@ -91,9 +92,8 @@ defmodule Veli do
     %{rule: rules} = rules
 
     if is_map(values) or is_struct(values) do
-      values
+      rules
       |> Map.keys()
-      |> Enum.filter(fn key -> rules[key] !== nil end)
       |> Enum.map(fn key ->
         value = values[key]
         rules = rules[key]
@@ -109,19 +109,26 @@ defmodule Veli do
     keys = Keyword.keys(rules)
 
     @validators
-    |> Map.filter(fn {atom, _module} ->
-      atom in keys
-    end)
-    |> Keyword.new(fn {atom, module} ->
+    |> Enum.filter(fn {atom, _module} -> atom in keys end)
+    |> Enum.each(fn {atom, module} ->
       rule = rules[atom]
 
-      if module.valid?(value, rule) === true do
-        {atom, true}
-      else
-        fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
-        {atom, fail_msg || false}
+      case module.valid?(value, rule) do
+        nil ->
+          throw(nil)
+
+        false ->
+          fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
+          throw({atom, fail_msg || false})
+
+        _ ->
+          :ok
       end
     end)
+
+    nil
+  catch
+    result -> result
   end
 
   def valid(_value, _rules) do
@@ -129,19 +136,27 @@ defmodule Veli do
   end
 
   @doc """
-  Returns all false validates.
+  Returns all failed validations.
 
   ## Example
 
-      rule = %Veli.Types.List{rules: [type: {:float, true}]}
+      rule = %Veli.Types.List{rule: [type: :float]}
       Veli.valid([5, 3.2, "how"], rule) |> Veli.errors()
   """
-  @spec errors(keyword) :: keyword
+  @spec errors(keyword | tuple) :: keyword
+  def errors(result) when is_tuple(result) do
+    [result]
+  end
+
+  def errors(result) when is_nil(result) do
+    []
+  end
+
   def errors(result) do
     result
-    |> Enum.map(fn {atom, value} -> if is_list(value), do: errors(value), else: {atom, value} end)
+    |> Enum.map(fn {_atom, value} -> if is_list(value), do: errors(value), else: value end)
     |> List.flatten()
-    |> Enum.filter(fn {_atom, value} -> value !== true end)
+    |> Enum.filter(fn value -> value !== nil end)
   end
 
   @doc """
@@ -150,10 +165,10 @@ defmodule Veli do
 
   ## Example
 
-      rule = %Veli.Types.List{rules: [type: {:float, true}]}
+      rule = %Veli.Types.List{rule: [type: :float]}
       Veli.valid([5, 3.2, "how"], rule) |> Veli.error()
   """
-  @spec error(keyword) :: tuple
+  @spec error(keyword | tuple) :: tuple | nil
   def error(result) do
     result
     |> errors

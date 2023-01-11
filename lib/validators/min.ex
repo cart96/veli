@@ -9,7 +9,7 @@ defmodule Veli.Validators.Min do
       Veli.valid(1, rule) # invalid
   """
 
-  @spec valid?(binary | maybe_improper_list | number | map, number) :: boolean
+  @spec valid?(binary | number, number) :: boolean
   def valid?(value, rule) when is_binary(value) do
     String.length(value) >= rule
   end
@@ -19,6 +19,6 @@ defmodule Veli.Validators.Min do
   end
 
   def valid?(_value, _rule) do
-    true
+    false
   end
 end
