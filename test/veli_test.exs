@@ -54,7 +54,7 @@ defmodule VeliTest do
   end
 
   test "nullable value" do
-    rule = [type: :string, nullable: true]
+    rule = [nullable: true, type: :string]
 
     assert Veli.valid("hello", rule) |> Veli.error() === nil
     assert Veli.valid(nil, rule) |> Veli.error() === nil

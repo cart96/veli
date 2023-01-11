@@ -63,7 +63,7 @@ defmodule Veli do
   You can read library tests for more example.
   """
 
-  @validators [
+  @default_validators [
     nullable: Veli.Validators.Nullable,
     type: Veli.Validators.Type,
     run: Veli.Validators.Run,
@@ -136,7 +136,7 @@ defmodule Veli do
           end
 
         _ ->
-          raise "Validator \"#{atom |> inspect}\" not found in ETS table."
+          :ok
       end
     end)
 
@@ -221,7 +221,7 @@ defmodule Veli do
     if :ets.whereis(:veli_validators) === :undefined do
       :ets.new(:veli_validators, [:set, :protected, :named_table])
 
-      @validators
+      @default_validators
       |> Enum.each(fn {name, module} ->
         :ets.insert(:veli_validators, {name, module})
       end)
