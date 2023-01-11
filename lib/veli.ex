@@ -27,6 +27,17 @@ defmodule Veli do
       }}
       Veli.valid(%{username: "bob", age: 16}, rule) |> Veli.error() === nil
 
+  ## Ordering
+  You must order your rules correctly to make them work properly. For example, if you put "nullable" rule after "type" rule, you will get type error.
+
+      rule = [nullable: true, type: :integer]
+      Veli.valid(5, rule) # nil
+      Veli.valid(nil, rule) # nil
+
+      rule = [type: :integer, nullable: true]
+      Veli.valid(5, rule) # nil
+      Veli.valid(nil, rule) # {:type, false}
+
   ## Custom Errors
   By default, Any error returns `false`. You can specify custom errors with adding underscore (_) prefix.
 
@@ -75,7 +86,7 @@ defmodule Veli do
 
   More examples can be found in library tests.
   """
-  @spec valid(any, keyword | Veli.Types.List | Veli.Types.Map) :: keyword | tuple
+  @spec valid(any, keyword | Veli.Types.List | Veli.Types.Map) :: keyword | tuple | nil
   def valid(values, rules) when is_struct(rules, Veli.Types.List) do
     %{rule: rules} = rules
 
@@ -106,23 +117,26 @@ defmodule Veli do
   end
 
   def valid(value, rules) when is_list(rules) do
-    keys = Keyword.keys(rules)
+    init_validator_table()
 
-    @validators
-    |> Enum.filter(fn {atom, _module} -> atom in keys end)
-    |> Enum.each(fn {atom, module} ->
-      rule = rules[atom]
+    rules
+    |> Enum.each(fn {atom, rule} ->
+      case :ets.lookup(:veli_validators, atom) do
+        [{_atom, module} | _other] ->
+          case module.valid?(value, rule) do
+            nil ->
+              throw(nil)
 
-      case module.valid?(value, rule) do
-        nil ->
-          throw(nil)
+            false ->
+              fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
+              throw({atom, fail_msg || false})
 
-        false ->
-          fail_msg = rules[String.to_atom("_" <> Atom.to_string(atom))]
-          throw({atom, fail_msg || false})
+            _ ->
+              :ok
+          end
 
         _ ->
-          :ok
+          raise "Validator \"#{atom |> inspect}\" not found in ETS table."
       end
     end)
 
@@ -173,5 +187,46 @@ defmodule Veli do
     result
     |> errors
     |> List.first()
+  end
+
+  @doc """
+  Add a custom validator to validator table.
+  Given module must have a function named "valid?".
+  Check validators in source code to get more information about implementing your own validator.
+
+  ## Example
+
+      defmodule ModValidator do
+        def valid?(value, rule) when is_number(value) do
+          rem(value, rule) === 0
+        end
+
+        def valid?(_value, _rule) do
+          false
+        end
+      end
+
+      Veli.add_validator(:mod, ModValidator)
+
+      rule = %Veli.Types.List{rule: [nullable: false, type: :integer, mod: 2]}
+      Veli.valid([2, 4, 6], rule) |> Veli.error()
+  """
+  @spec add_validator(atom, module) :: true
+  def add_validator(name, module) do
+    init_validator_table()
+    :ets.insert(:veli_validators, {name, module})
+  end
+
+  defp init_validator_table do
+    if :ets.whereis(:veli_validators) === :undefined do
+      :ets.new(:veli_validators, [:set, :protected, :named_table])
+
+      @validators
+      |> Enum.each(fn {name, module} ->
+        :ets.insert(:veli_validators, {name, module})
+      end)
+    else
+      :ok
+    end
   end
 end

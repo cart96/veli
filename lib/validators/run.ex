@@ -1,6 +1,6 @@
 defmodule Veli.Validators.Run do
   @moduledoc """
-  Allows you to add custom validator. Any other value than `true` will computed as `false`.
+  Allows you to add custom filter function. Any other value than `false` will computed as `true`.
 
   ## Example
 
