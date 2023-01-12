@@ -87,33 +87,37 @@ defmodule Veli do
   More examples can be found in library tests.
   """
   @spec valid(any, keyword | Veli.Types.List | Veli.Types.Map) :: keyword | tuple | nil
-  def valid(values, rules) when is_struct(rules, Veli.Types.List) do
-    %{rule: rules} = rules
-
+  def valid(values, %{rule: rule, error: error} = rules) when is_struct(rules, Veli.Types.List) do
     if is_list(values) do
       values
       |> Enum.with_index()
-      |> Enum.map(fn {value, index} -> {index, valid(value, rules)} end)
+      |> Enum.map(fn {value, index} -> {index, valid(value, rule)} end)
     else
-      [type: rules[:error] || false]
+      [type: error || false]
     end
   end
 
-  def valid(values, rules) when is_struct(rules, Veli.Types.Map) do
-    %{rule: rules} = rules
-
-    if is_map(values) or is_struct(values) do
-      rules
-      |> Map.keys()
-      |> Enum.map(fn key ->
-        value = values[key]
-        rules = rules[key]
-
-        {key, valid(value, rules)}
-      end)
-    else
-      [type: rules[:error] || false]
+  def valid(values, %{rule: rule, strict: strict, error: error} = rules)
+      when is_struct(rules, Veli.Types.Map) do
+    if not (is_map(values) or is_struct(values)) do
+      throw(nil)
     end
+
+    rule_keys = Map.keys(rule)
+    values_keys = Map.keys(values)
+
+    if strict === true and Enum.sort(rule_keys) !== Enum.sort(values_keys) do
+      throw(nil)
+    end
+
+    Enum.map(rule_keys, fn key ->
+      value = values[key]
+      rule = rule[key]
+
+      {key, valid(value, rule)}
+    end)
+  catch
+    _ -> [type: error || false]
   end
 
   def valid(value, rules) when is_list(rules) do

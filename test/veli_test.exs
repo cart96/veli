@@ -24,6 +24,7 @@ defmodule VeliTest do
         _min: "Age must be at least 13."
       ]
     },
+    strict: true,
     error: "Form must be an object."
   }
 
@@ -59,5 +60,24 @@ defmodule VeliTest do
     assert Veli.valid("hello", rule) |> Veli.error() === nil
     assert Veli.valid(nil, rule) |> Veli.error() === nil
     assert Veli.valid(5, rule) |> Veli.error() !== nil
+  end
+
+  test "map strict matching" do
+    form_1 = %{username: "bob", age: 15}
+    form_2 = %{age: 15, username: "bob"}
+    form_3 = %{age: 15, username: "bob", another: 3}
+    form_4 = %{username: "bob", another: 3}
+
+    assert Veli.valid(form_1, @rules) |> Veli.error() === nil
+    assert Veli.valid(form_2, @rules) |> Veli.error() === nil
+    assert Veli.valid(form_3, @rules) |> Veli.error() !== nil
+    assert Veli.valid(form_4, @rules) |> Veli.error() !== nil
+  end
+
+  test "validate simple list" do
+    list = [5, 3, 2, 1]
+    rule = %Veli.Types.List{rule: [nullable: false, type: :integer]}
+
+    assert Veli.valid(list, rule) |> Veli.error() === nil
   end
 end
