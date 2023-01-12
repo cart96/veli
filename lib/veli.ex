@@ -99,25 +99,23 @@ defmodule Veli do
 
   def valid(values, %{rule: rule, strict: strict, error: error} = rules)
       when is_struct(rules, Veli.Types.Map) do
-    if not (is_map(values) or is_struct(values)) do
-      throw(nil)
+    if is_map(values) or is_struct(values) do
+      rule_keys = Map.keys(rule)
+      values_keys = Map.keys(values)
+
+      if strict === true and Enum.sort(rule_keys) !== Enum.sort(values_keys) do
+        [type: error || false]
+      else
+        Enum.map(rule_keys, fn key ->
+          value = values[key]
+          rule = rule[key]
+
+          {key, valid(value, rule)}
+        end)
+      end
+    else
+      [type: error || false]
     end
-
-    rule_keys = Map.keys(rule)
-    values_keys = Map.keys(values)
-
-    if strict === true and Enum.sort(rule_keys) !== Enum.sort(values_keys) do
-      throw(nil)
-    end
-
-    Enum.map(rule_keys, fn key ->
-      value = values[key]
-      rule = rule[key]
-
-      {key, valid(value, rule)}
-    end)
-  catch
-    _ -> [type: error || false]
   end
 
   def valid(value, rules) when is_list(rules) do
