@@ -57,9 +57,17 @@ form = %{"username" => "john", "age" => 16}
 Veli.valid(form, form_validator)
 ```
 
+## Community Validators
+
+This list contains validators built for Veli.
+
+- [VeliTurnstile](https://github.com/cart96/veli_turnstile): Cloudflare Turnstile validator for Veli
+
 ## Contributing
 
-Please don't send any pull request to master branch.
+Please don't send any pull request to main branch.
+
+- You can send pull request to main branch only for adding community validators.
 
 You can report bugs or request features [here](https://github.com/cart96/veli/issues).
 
