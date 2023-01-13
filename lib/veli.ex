@@ -64,6 +64,7 @@ defmodule Veli do
   """
 
   @default_validators [
+    format: Veli.Validators.Format,
     empty: Veli.Validators.Empty,
     nullable: Veli.Validators.Nullable,
     type: Veli.Validators.Type,
