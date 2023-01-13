@@ -9,7 +9,7 @@ defmodule Veli.Validators.Max do
       Veli.valid(30, rule) # invalid
   """
 
-  @spec valid?(binary | number, number) :: boolean
+  @spec valid?(any, number) :: boolean
   def valid?(value, rule) when is_binary(value) do
     String.length(value) <= rule
   end

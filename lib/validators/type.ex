@@ -1,6 +1,6 @@
 defmodule Veli.Validators.Type do
   @moduledoc """
-  Type validator. Takes a tuple that contains a atom with nullable boolean.
+  Type validator. Takes an atom that contains type information.
 
   ## Atoms
   - `:string`
@@ -15,7 +15,7 @@ defmodule Veli.Validators.Type do
       Veli.valid(4.2, rule) # not valid
   """
 
-  @spec valid?(boolean | binary | maybe_improper_list | number | map, atom) :: boolean
+  @spec valid?(any, atom) :: boolean
   def valid?(value, rule) when is_binary(value) do
     rule === :string
   end

@@ -10,7 +10,7 @@ defmodule Veli.Validators.Nullable do
       Veli.valid(4.2, rule) # not valid
   """
 
-  @spec valid?(any, boolean) :: boolean
+  @spec valid?(any, boolean) :: boolean | nil
   def valid?(value, nullable) when is_nil(value) do
     if nullable === true do
       nil
