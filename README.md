@@ -65,13 +65,9 @@ This list contains validators built for Veli.
 
 ## Contributing
 
-Please don't send any pull request to main branch.
+- You can report bugs or request features [here](https://github.com/cart96/veli/issues).
 
-- You can send pull request to main branch only for adding community validators.
-
-You can report bugs or request features [here](https://github.com/cart96/veli/issues).
-
-Always use `mix format` before sending a pull request.
+- Always use `mix format` before sending a pull request.
 
 ## License
 
