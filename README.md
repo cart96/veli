@@ -9,7 +9,7 @@ the package can be installed by adding `veli` to your list of dependencies in `m
 ```elixir
 def deps do
   [
-    {:veli, "~> 0.2.5"}
+    {:veli, "~> 0.2.6"}
   ]
 end
 ```
@@ -18,11 +18,17 @@ end
 
 Documentation is avaible at [HexDocs](https://hexdocs.pm/veli).
 
-## Example
+## Examples
 
-The following example taken from veli tests.
+### Simple Example
 
-```ex
+```elixir
+Veli.valid("hello", type: :string, match: ~r/^(h|H)/) |> Veli.error()
+```
+
+### Form Validation
+
+```elixir
 form_validator = %Veli.Types.Map{
   rule: %{
     "username" => [
@@ -50,12 +56,32 @@ form_validator = %Veli.Types.Map{
       _min: "Age must be at least 13."
     ]
   },
+  strict: true,
   error: "Form must be an object."
 }
 
 form = %{"username" => "john", "age" => 16}
-Veli.valid(form, form_validator)
+Veli.valid(form, form_validator) |> Veli.error()
 ```
+
+### With Builder
+
+```elixir
+defmodule Validators.Users do
+  use Veli.Build, %Veli.Types.Map{
+    rule: %{
+      "username" => [type: :string, min: 3, max: 32],
+      "age" => [type: :integer, min: 13]
+    },
+    strict: true
+  }
+end
+
+Validators.Users.valid(%{"username" => "yeah", "age" => 17})
+|> Veli.error()
+```
+
+More examples can be found in test files.
 
 ## Community Validators
 
