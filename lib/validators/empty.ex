@@ -1,13 +1,13 @@
 defmodule Veli.Validators.Empty do
   @moduledoc """
   Empty value validator.
-
+  
   ## Example
-
+  
       rule = [type: :string, empty: true]
       Veli.valid("hello", rule) # valid
       Veli.valid("", rule) # valid
-
+  
       rule = [type: :string, empty: false]
       Veli.valid("hello", rule) # valid
       Veli.valid("", rule) # not valid

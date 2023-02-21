@@ -1,9 +1,9 @@
 defmodule Veli.Validators.Max do
   @moduledoc """
   Max validator.
-
+  
   ## Example
-
+  
       rule = [max: 20]
       Veli.valid("valid length", rule)
       Veli.valid(30, rule) # invalid

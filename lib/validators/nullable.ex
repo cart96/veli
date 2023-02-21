@@ -1,9 +1,9 @@
 defmodule Veli.Validators.Nullable do
   @moduledoc """
   Nullable validator.
-
+  
   ## Example
-
+  
       rule = [type: :integer, nullable: true]
       Veli.valid(2, rule) # valid
       Veli.valid(nil, rule) # valid

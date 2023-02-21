@@ -1,54 +1,54 @@
 defmodule Veli do
   @moduledoc """
   Veli is a simple validation library for elixir.
-
+  
   ## Rules
   ### Simple Rules
   When you validate simple types (like a string or an integer),
   you must use simple rules. Which is a keyword list.
-
+  
       rule = [type: :string, run: fn value -> String.reverse(value) === value end]
       Veli.valid("wow", rule) |> Veli.error() === nil
-
+  
   ### List Rules
   When you need to validate every item on a list,
   you must use `Veli.Types.List` struct so validator can know if it is validating a string or a value.
-
+  
       rule = %Veli.Types.List{rule: [type: :integer]}
       Veli.valid([4, 2, 7, 1], rule) |> Veli.error() === nil
-
+  
   ### Map Rules
   When you need to validate a map (an object),
   you must use `Veli.Types.Map` struct so validator can know if it is validating a map or a value.
-
+  
       rule = %Veli.Types.Map{rule: %{
         username: [type: :string],
         age: [type: :integer, min: 13]
       }}
       Veli.valid(%{username: "bob", age: 16}, rule) |> Veli.error() === nil
-
+  
   ## Ordering
   You must order your rules correctly to make them work properly. For example, if you put "nullable" rule after "type" rule, you will get type error.
-
+  
       rule = [nullable: true, type: :integer]
       Veli.valid(5, rule) # nil
       Veli.valid(nil, rule) # nil
-
+  
       rule = [type: :integer, nullable: true]
       Veli.valid(5, rule) # nil
       Veli.valid(nil, rule) # {:type, false}
-
+  
   ## Custom Errors
   By default, Any error returns `false`. You can specify custom errors with adding underscore (_) prefix.
-
+  
       rule = [type: :integer, _type: "Value must be an integer!"]
       Veli.valid(10, rule) |> Veli.error() # nil
       Veli.valid("invalid value", rule) |> Veli.error() # "Value must be an integer!"
-
+  
   ### Custom Errors for Map or List
   As you can see in `Veli.Types.Map` or `Veli.Types.List`, they both have a field named "error" which is nil by default.
   You can specify custom errors with "error" field.
-
+  
       rule = %Veli.Types.Map{
         rule: %{
           username: [type: :string],
@@ -58,7 +58,7 @@ defmodule Veli do
       }
       Veli.valid(%{username: "bob", age: 16}, rule) |> Veli.error() # nil
       Veli.valid(96, rule) |> Veli.error() # "Not a valid object."
-
+  
   ### More Example
   You can read library tests for more example.
   """
@@ -79,13 +79,13 @@ defmodule Veli do
   @doc """
   Validate a value with rules.
   Returns a keyword list which contains results. You should not process that result yourself. Use `Veli.errors` or `Veli.error` for processing results instead.
-
+  
   ## Example
-
+  
       rule = [type: :string, match: ~r/^https?/]
       Veli.valid("wow", rule) |> Veli.error() !== nil
       Veli.valid("https://hex.pm", rule) |> Veli.error() === nil
-
+  
   More examples can be found in library tests.
   """
   @spec valid(any, keyword | Veli.Types.List | Veli.Types.Map) :: keyword | tuple | nil
@@ -150,14 +150,14 @@ defmodule Veli do
   end
 
   def valid(_value, _rules) do
-    raise ArgumentError, message: "Unexpected type for rules."
+    [type: false]
   end
 
   @doc """
   Returns all failed validations.
-
+  
   ## Example
-
+  
       rule = %Veli.Types.List{rule: [type: :float]}
       Veli.valid([5, 3.2, "how"], rule) |> Veli.errors()
   """
@@ -180,9 +180,9 @@ defmodule Veli do
   @doc """
   Returns first error from validate result.
   Returns `nil` if everything is valid.
-
+  
   ## Example
-
+  
       rule = %Veli.Types.List{rule: [type: :float]}
       Veli.valid([5, 3.2, "how"], rule) |> Veli.error()
   """
@@ -197,21 +197,21 @@ defmodule Veli do
   Add a custom validator to validator table.
   Given module must have a function named "valid?".
   Check validators in source code to get more information about implementing your own validator.
-
+  
   ## Example
-
+  
       defmodule ModValidator do
         def valid?(value, rule) when is_number(value) do
           rem(value, rule) === 0
         end
-
+  
         def valid?(_value, _rule) do
           false
         end
       end
-
+  
       Veli.add_validator(:mod, ModValidator)
-
+  
       rule = %Veli.Types.List{rule: [nullable: false, type: :integer, mod: 2]}
       Veli.valid([2, 4, 6], rule) |> Veli.error()
   """

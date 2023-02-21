@@ -1,9 +1,9 @@
 defmodule Veli.Validators.Min do
   @moduledoc """
   Min validator.
-
+  
   ## Example
-
+  
       rule = [min: 5]
       Veli.valid("valid length", rule)
       Veli.valid(1, rule) # invalid

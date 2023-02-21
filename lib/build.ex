@@ -1,7 +1,7 @@
 defmodule Veli.Build do
   @moduledoc """
   This macro allows you define rule and add a validator function inside of it.
-
+  
       defmodule Validators.Users do
         use Veli.Build, %Veli.Types.Map{
           rule: %{
@@ -11,7 +11,7 @@ defmodule Veli.Build do
           strict: true
         }
       end
-
+  
       Validators.Users.valid(%{"username" => "hello", "age" => 17})
       |> Veli.error
   """

@@ -1,9 +1,9 @@
 defmodule Veli.Validators.Inside do
   @moduledoc """
   Inside validator.
-
+  
   ## Example
-
+  
       rule = [type: :string, inside: ["value1", "value2"]]
       Veli.valid("value1", rule)
   """

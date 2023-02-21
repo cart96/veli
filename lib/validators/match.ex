@@ -2,9 +2,9 @@ defmodule Veli.Validators.Match do
   @moduledoc """
   Match validator.
   Uses regex if match value is a regex sigil. Otherwise compares both values.
-
+  
   ## Example
-
+  
       rule = [type: :string, match: ~r/^https?/]
       Veli.valid("https://example.com", rule)
   """

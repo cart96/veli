@@ -1,15 +1,15 @@
 defmodule Veli.Validators.Type do
   @moduledoc """
   Type validator. Takes an atom that contains type information.
-
+  
   ## Atoms
   - `:string`
   - `:integer`
   - `:float`
   - `:boolean`
-
+  
   ## Example
-
+  
       rule = [type: :integer]
       Veli.valid(2, rule) # valid
       Veli.valid(4.2, rule) # not valid

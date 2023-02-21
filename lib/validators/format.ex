@@ -1,10 +1,10 @@
 defmodule Veli.Validators.Format do
   @moduledoc """
   String format validator.
-
+  
   ## Note
   Most of the format validation are done by using regex. Most of them are -> https://ihateregex.io/ <- taken from here.
-
+  
   ## Atoms
   - `:email`: Email adress
   - `:url`: Url
@@ -21,9 +21,9 @@ defmodule Veli.Validators.Format do
   - `:e164`: e.164 Phone Number Format
   - `:btcaddr`: Bitcoin Adress
   - `:semver`: Semantic Versioning
-
+  
   ## Example
-
+  
       rule = [type: :string, format: :url]
       Veli.valid("hello", rule) # not valid
       Veli.valid("https://x.org/", rule) # valid
